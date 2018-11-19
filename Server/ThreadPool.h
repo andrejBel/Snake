@@ -5,30 +5,40 @@
 #include <condition_variable>
 #include <functional>
 #include <queue>
+#include <vector>
 #include <mutex>
 #include <thread>
 #include <iostream>
 
 class ThreadPool {
 
-private:
 
+
+private:
 	std::queue<std::function<void(void)> > tasks_;
+	std::vector<std::thread> threads_;
 	bool end_;
 	std::condition_variable conditionVariable_;
 	std::mutex mutex_;
-	std::atomic<int> destroyedThreads_;
 	std::atomic<int> undoneTasks_;
-	int threadCount_;
-	void joinAll();
+	
 	void run();
-
-
-
+	
+	enum Action
+	{
+		SLEEP, WORK, END
+	};
+	
 public:
+	void joinAll();
 
+	ThreadPool::Action getNextAction();
+	ThreadPool(int c = 1);
 
-	ThreadPool(int c);
+	inline size_t getThreadCount() 
+	{
+		return threads_.size();
+	}
 
 	ThreadPool(const ThreadPool& other) = delete;
 
